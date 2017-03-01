@@ -2,7 +2,7 @@
 //allgemein
 $locale['WMKP001'] = 'Terminkalender';
 $locale['WMKP002'] = 'Ein Kalender zur Terminverwaltung';
-$locale['WMKP003'] = 'Markttermine';
+$locale['WMKP003'] = 'Termine';
 //kalender.php  admin.php
 $locale['WMKP004'] = 'Es sind noch keine Einträge im Kalender vorhanden';
 //DB einträge
