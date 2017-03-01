@@ -19,7 +19,7 @@
 | written permission from the original author(s).
 +--------------------------------------------------------*/
 require_once "../../maincore.php";
-//pageAccess('WMKP');
+pageAccess('WMKP');
 require_once THEMES."templates/admin_header.php";
 require_once INCLUDES."bbcode_include.php";
 require_once INFUSIONS."kalender_panel/infusion_db.php";
@@ -28,6 +28,9 @@ require_once INCLUDES."infusions_include.php";
 
 if (!defined("KALENDER")) {
     define("KALENDER", INFUSIONS."kalender_panel/");
+}
+if (!defined("ADMIN_PANEL")) {
+    define("ADMIN_PANEL", TRUE);
 }
 if (file_exists(KALENDER."locale/".$settings['locale'].".php")) {
     require_once KALENDER."locale/".$settings['locale'].".php";
@@ -60,15 +63,15 @@ if(isset($_POST['kalender'])){
     $enddatum=form_sanitizer($_POST['enddatum'], '', 'enddatum');
 
     if(defender::safe()){
-        if(isset($_GET['action'])&&$_GET['action']=='insert'){
+        if(isset($_POST['action'])&&$_POST['action']=='insert'){
             $result=dbquery("INSERT INTO ".DB_WMKP_KALENDER." (kalender_title, kalender_text, kalender_startdatum, kalender_enddatum) VALUES (:title, :text, :startdatum, :enddatum)", array(':title'=>$title, ':text'=>$text, ':startdatum'=>$startdatum, ':enddatum'=>$enddatum));
             if($result) addNotice("success", "<p>".$locale['WMKP007']."</p>\n");
             else addNotice("warning", "<p>".$locale['WMKP008']."</p>\n");
         }
-        if(isset($_GET['action'])&&$_GET['action']=='update'){
-            if(isset($_GET['id'])&&is_numeric($_GET['id'])){
-                $result=dbquery("UPDATE ".DB_WMKP_KALENDER." SET kalender_title=:title, kalender_text=:text, kalender_startdatum=:startdatum, kalender_enddatum=:enddatum WHERE kalender_id=".$_GET['id'], array(':title'=>$title, ':text'=>$text, ':startdatum'=>$startdatum, ':enddatum'=>$enddatum));
-                if($result) addNotice("success", "<p>".$locale['WMKP009']."</p>\n");
+        if(isset($_POST['action'])&&$_POST['action']=='update'){
+            if(isset($_POST['id'])&&is_numeric($_POST['id'])){
+                $result=dbquery("UPDATE ".DB_WMKP_KALENDER." SET kalender_title=:title, kalender_text=:text, kalender_startdatum=:startdatum, kalender_enddatum=:enddatum WHERE kalender_id=".$_POST['id'], array(':title'=>$title, ':text'=>$text, ':startdatum'=>$startdatum, ':enddatum'=>$enddatum));
+                if($result) redirect(KALENDER.'admin.php'.fusion_get_aidlink());
                 else addNotice("warning", "<p>".$locale['WMKP010']."</p>\n");
             }else addNotice("warning", "<p>".$locale['WMKP011']."</p>\n");
         }
@@ -81,21 +84,24 @@ if(isset($_GET['action'])&&$_GET['action']=='bearbeiten'&&isset($_GET['id'])&&is
     $startdate = date("d-m-Y", $startdate);
     $enddate =  strtotime($data['kalender_enddatum']);
     $enddate = date("d-m-Y", $enddate);
-    echo openform('kalender_form', 'post', KALENDER.'admin.php'.fusion_get_aidlink().'&action=update&id='.$_GET['id']);
+    echo openform('kalender_form', 'post', FUSION_REQUEST);
     echo form_text('title', $locale['WMKP012'], $data['kalender_title'], array('required' => 1, 'error_text' => $locale['WMKP013'], 'max_length' => 128));
     echo form_textarea('text', $locale['WMKP014'], $data['kalender_text'], array("type" => "bbcode"));
     echo form_datepicker('startdatum', $locale['WMKP015'], $startdate, array("date_format_js" => "DD-M-YYYY", "date_format_php" => "Y-m-d", 'error_text' => $locale['WMKP016'], "type"=>"date"));
-echo form_datepicker('enddatum', $locale['WMKP015a'], $enddate, array("date_format_js" => "DD-M-YYYY", "date_format_php" => "Y-m-d", 'error_text' => $locale['WMKP016a'], "type"=>"date"));
+    echo form_datepicker('enddatum', $locale['WMKP015a'], $enddate, array("date_format_js" => "DD-M-YYYY", "date_format_php" => "Y-m-d", 'error_text' => $locale['WMKP016a'], "type"=>"date"));
+    echo form_hidden('action','','update');
+    echo form_hidden('id','',$_GET['id']);
     echo form_button('kalender', $locale['WMKP017'], "save", array('class' => 'btn-primary m-t-10'));
     echo closeform();
     closetable();
 }else{
     opentable($locale['WMKP019']);
-    echo openform('kalender_form', 'post', KALENDER.'admin.php'.fusion_get_aidlink().'&action=insert');
+    echo openform('kalender_form', 'post', FUSION_REQUEST);
     echo form_text('title', $locale['WMKP012'], $title, array('required' => 1, 'error_text' => $locale['WMKP013'], 'max_length' => 128));
     echo form_textarea('text', $locale['WMKP014'], $text, array("type" => "bbcode"));
     echo form_datepicker('startdatum', $locale['WMKP015'], $startdatum, array("date_format_js" => "DD-M-YYYY", "date_format_php" => "Y-m-d", 'error_text' => $locale['WMKP016'], "type"=>"date"));
     echo form_datepicker('enddatum', $locale['WMKP015a'], $enddatum, array("date_format_js" => "DD-M-YYYY", "date_format_php" => "Y-m-d", 'error_text' => $locale['WMKP016a'], "type"=>"date"));
+    echo form_hidden('action','','insert');
     echo form_button('kalender', $locale['WMKP017'], "save", array('class' => 'btn-primary m-t-10'));
     echo closeform();
     closetable();
